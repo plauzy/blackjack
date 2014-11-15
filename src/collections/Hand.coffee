@@ -4,7 +4,18 @@ class window.Hand extends Backbone.Collection
   initialize: (array, @deck, @isDealer) ->
 
   hit: ->
-    @add(@deck.pop())
+    card = @deck.pop()
+    @add(card)
+    card
+
+  stand: ->
+    if !@isDealer then @trigger 'flip'
+
+  # flipCard: ->
+  #   card = @where revealed : false
+  #   @trigger 'flip'
+  #   console.log(card)
+  #   card
 
   hasAce: -> @reduce (memo, card) ->
     memo or card.get('value') is 1
