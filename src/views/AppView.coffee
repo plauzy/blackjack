@@ -13,7 +13,7 @@ class window.AppView extends Backbone.View
       @render()
 
   initialize: ->
-    @model.on ''
+    @model.on 'all', @updateGameStatus, @
     @render()
 
   # disable: ->
@@ -25,3 +25,7 @@ class window.AppView extends Backbone.View
     @$('.player-hand-container').html new HandView(collection: @model.get 'playerHand').el
     @$('.dealer-hand-container').html new HandView(collection: @model.get 'dealerHand').el
 
+  updateGameStatus: (status) ->
+    if status is 'win:player' then alert('You won!')
+    if status is 'win:dealer' then alert('Dealer won.')
+    if status is 'push' then alert('push)')

@@ -5,40 +5,44 @@ class window.App extends Backbone.Model
     @set 'deck', deck = new Deck()
     @set 'playerHand', deck.dealPlayer()
     @set 'dealerHand', deck.dealDealer()
+    @get('playerHand').on 'all', @playerEvents, @
+    @get('dealerHand').on 'all', @dealerEvents, @
 
-    @get('playerHand').on 'turnover', =>
-      console.log('here')
-      dealer = @get 'dealerHand'
-      card = dealer.where revealed : false
-      if card.length
-        card[0].set revealed : true
-      else
-        if dealer.minScore() < 17
-          dealer.hit()
+    # @get('playerHand').on 'turnover', =>
+    #   console.log('here')
 
-    #map end function to gamewide method called compute to figure out winner
-    @get('dealerHand').on 'dealerBust', =>
-      alert('Dealer has bust! You win.')
-      # how would i signal to view to chagne that class
 
-    @get('dealerHand').on 'end', =>
-      @computeWinner()
+    # #map end function to gamewide method called compute to figure out winner
+    # @get('dealerHand').on 'dealerBust', =>
+    #   alert('Dealer has bust! You win.')
+    #   # how would i signal to view to chagne that class
 
-    @get('playerHand').on 'playerBust', =>
-      alert("You busted! You lose this round.")
+    # @get('dealerHand').on 'end', =>
+    #   @computeWinner()
 
-    @get('playerHand').on 'blackjack', =>
-      alert('BlackJack!')
-      setTimeout @get('dealerHand').hit(), 1000
+    # @get('playerHand').on 'playerBust', =>
+    #   alert("You busted! You lose this round.")
 
+    # @get('playerHand').on 'blackjack', =>
+    #   alert('BlackJack!')
+    #   setTimeout @get('dealerHand').hit(), 1000
+
+  playerEvents: (status, currentHand) ->
+    if status is 'stand' then @get('dealerHand').playRound()
+    if status is 'bust' then @trigger 'win:dealer'
+
+  dealerEvents: (status, currentHand) ->
+    if status is 'stand' then @computeWinner()
+    if status is 'bust' then @trigger 'win:player'
 
   computeWinner: ->
     player = @get('playerHand')
     dealer = @get('dealerHand')
     playerScore = player.minScore()
     dealerScore = dealer.minScore()
-    if playerScore < dealerScore then alert ('You lost')
-    if playerScore == dealerScore then alert ('You get your chips back')
+    if playerScore < dealerScore then @trigger 'win:dealer'
+    if playerScore > dealerScore then @trigger 'win:player'
+    if playerScore == dealerScore then @trigger 'push'
 
   reset: ->
     @set 'deck', deck = new Deck()

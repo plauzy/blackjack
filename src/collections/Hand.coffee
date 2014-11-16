@@ -5,29 +5,40 @@ class window.Hand extends Backbone.Collection
 
   hit: ->
     return if @scores()[0] >= 21
-    card = @deck.pop()
-    @add(card)
-    card
+    @add(@deck.pop())
+
+    if @busted then @trigger 'bust', @
 
   stand: ->
-    if !@isDealer and @minScore() < 21 then @trigger 'turnover'
+    @trigger 'stand', @
+    # if !@isDealer and @minScore() < 21 then @trigger 'turnover'
+
+  playRound: ->
+    @first().flip()
+    while @minScore() < 17
+      @hit()
+    if !@busted()
+      @stand()
 
   hasAce: -> @reduce (memo, card) ->
     memo or card.get('value') is 1
   , 0
+
+  busted: ->
+    @minScore() > 21
 
   minScore: ->     @reduce (score, card) ->
     score + if card.get 'revealed' then card.get 'value' else 0
   , 0
 
   scores: ->
-    if @isDealer
-      if @minScore() >= 17 and @minScore() <= 21 then @trigger 'end'
-      if @minScore() >= 21 then @trigger 'dealerBust'
+    # if @isDealer
+    #   if @minScore() >= 17 and @minScore() <= 21 then @trigger 'end'
+    #   if @minScore() >= 21 then @trigger 'dealerBust'
 
-    if !@isDealer
-      if @minScore() == 21 then @trigger 'blackjack'
-      if @minScore() > 21 then @trigger 'playerBust'
+    # if !@isDealer
+    #   if @minScore() == 21 then @trigger 'blackjack'
+    #   if @minScore() > 21 then @trigger 'playerBust'
 
 
     # The scores are an array of potential scores.
